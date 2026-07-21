@@ -23,8 +23,8 @@ jobs:
       - name: Instalar componentes Android
         run: |
           sdkmanager "platform-tools"
-          sdkmanager "platforms;android-35"
-          sdkmanager "build-tools;35.0.0"
+          sdkmanager "platforms;android-34"
+          sdkmanager "build-tools;34.0.0"
 
       - name: Instalar Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -37,10 +37,12 @@ jobs:
           mkdir proyecto
           unzip -q unas_rolitas_android_project.zip -d proyecto
 
-      - name: Mostrar estructura del proyecto
+      - name: Corregir API experimental de Material 3
         run: |
-          echo "Contenido del proyecto:"
-          find proyecto -maxdepth 4 -type f | sort
+          FILE="proyecto/app/src/main/java/com/unasrolitas/app/ui/MainScreen.kt"
+
+          sed -i '/^package com.unasrolitas.app.ui$/i @file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)\
+' "$FILE"
 
       - name: Compilar APK
         run: |
