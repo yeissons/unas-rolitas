@@ -29,9 +29,6 @@ jobs:
           mkdir -p extracted
           unzip -q "$ZIP_FILE" -d extracted
 
-          echo "Contenido extraído:"
-          find extracted -maxdepth 4 -type f | sort
-
       - name: Find Android project
         id: find_project
         run: |
@@ -46,6 +43,20 @@ jobs:
           echo "$PROJECT_DIR"
 
           echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Fix incompatible Compose plugin
+        working-directory: ${{ steps.find_project.outputs.project_dir }}
+        run: |
+          sed -i '/alias(libs.plugins.kotlin.compose) apply false/d' build.gradle.kts
+          sed -i '/kotlin-compose =/d' gradle/libs.versions.toml
+
+          echo "Plugin Compose incompatible eliminado."
+
+          echo "===== build.gradle.kts ====="
+          cat build.gradle.kts
+
+          echo "===== Comprobación kotlin-compose ====="
+          grep "kotlin-compose" gradle/libs.versions.toml || echo "kotlin-compose eliminado correctamente."
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
