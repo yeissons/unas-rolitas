@@ -26,31 +26,33 @@ jobs:
           sdkmanager "platforms;android-35"
           sdkmanager "build-tools;35.0.0"
 
+      - name: Instalar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
       - name: Descomprimir proyecto
         run: |
           rm -rf proyecto
           mkdir proyecto
           unzip -q unas_rolitas_android_project.zip -d proyecto
 
-      - name: Buscar proyecto Android
+      - name: Mostrar estructura del proyecto
         run: |
-          echo "Buscando Gradle Wrapper..."
-          find proyecto -name gradlew -type f -print
-
-      - name: Preparar Gradle
-        run: |
-          GRADLEW=$(find proyecto -name gradlew -type f | head -1)
-          chmod +x "$GRADLEW"
+          echo "Contenido del proyecto:"
+          find proyecto -maxdepth 4 -type f | sort
 
       - name: Compilar APK
         run: |
-          GRADLEW=$(find proyecto -name gradlew -type f | head -1)
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          cd "$PROJECT_DIR"
-          ./gradlew assembleDebug --stacktrace
+          cd proyecto
+          gradle assembleDebug --stacktrace
+
+      - name: Buscar APK
+        run: |
+          find proyecto -type f -name "*.apk" -print
 
       - name: Subir APK
         uses: actions/upload-artifact@v4
         with:
           name: unas-rolitas-debug
-          path: "**/app/build/outputs/apk/debug/*.apk"
+          path: "**/build/outputs/apk/debug/*.apk"
