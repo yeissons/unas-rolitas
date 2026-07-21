@@ -37,12 +37,29 @@ jobs:
           mkdir proyecto
           unzip -q unas_rolitas_android_project.zip -d proyecto
 
-      - name: Corregir API experimental de Material 3
+      - name: Corregir MainScreen.kt
         run: |
           FILE="proyecto/app/src/main/java/com/unasrolitas/app/ui/MainScreen.kt"
+          python3 - "$FILE" <<'PY'
+          import sys
 
-          sed -i '/^package com.unasrolitas.app.ui$/i @file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)\
-' "$FILE"
+          path = sys.argv[1]
+
+          with open(path, "r", encoding="utf-8") as f:
+              content = f.read()
+
+          annotation = "@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)"
+
+          if annotation not in content:
+              content = content.replace(
+                  "package com.unasrolitas.app.ui",
+                  annotation + "\n\npackage com.unasrolitas.app.ui",
+                  1
+              )
+
+          with open(path, "w", encoding="utf-8") as f:
+              f.write(content)
+          PY
 
       - name: Compilar APK
         run: |
